@@ -57,7 +57,7 @@ public class MoviesController : ControllerBase
         }
 
         var response = movie.MapToResponse();
-        return Ok();
+        return Ok(response);
     }
 
     [HttpDelete(ApiEndpoints.Movies.Delete)]
