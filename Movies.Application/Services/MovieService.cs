@@ -9,12 +9,17 @@ public class MovieService : IMovieService
     private readonly IMovieRepository _movieRepository;
     private readonly IRatingRepository _ratingRepository;
     private readonly MovieValidator _movieValidator;
+    private readonly GetAllMoviesOptionsValidator _optionsValidator;
 
-    public MovieService(IMovieRepository movieRepository, IRatingRepository ratingRepository, MovieValidator movieValidator)
+    public MovieService(IMovieRepository movieRepository,
+                        IRatingRepository ratingRepository,
+                        MovieValidator movieValidator,
+                        GetAllMoviesOptionsValidator optionsValidator)
     {
         _movieRepository = movieRepository;
         _ratingRepository = ratingRepository;
         _movieValidator = movieValidator;
+        _optionsValidator = optionsValidator;
     }
 
     public async Task<bool> CreateAsync(Movie movie, CancellationToken token = default)
@@ -23,9 +28,10 @@ public class MovieService : IMovieService
         return await _movieRepository.CreateAsync(movie);
     }
 
-    public Task<IEnumerable<Movie>> GetAllAsync(Guid? userId = default, CancellationToken token = default)
+    public async Task<IEnumerable<Movie>> GetAllAsync(GetAllMoviesOptions options, CancellationToken token = default)
     {
-        return _movieRepository.GetAllAsync(userId, token);
+        await _optionsValidator.ValidateAndThrowAsync(options, cancellationToken: token);
+        return await _movieRepository.GetAllAsync(options, token);
     }
 
     public Task<Movie?> GetByIdAsync(Guid id, Guid? userId = default, CancellationToken token = default)
@@ -64,5 +70,10 @@ public class MovieService : IMovieService
     public Task<bool> DeleteAsync(Guid id, CancellationToken token = default)
     {
         return _movieRepository.DeleteAsync(id, token);
+    }
+
+    public Task<int> GetCountAsync(string? title, int? yearOfRelease, CancellationToken token = default)
+    {
+        return _movieRepository.GetCountAsync(title, yearOfRelease, token);
     }
 }

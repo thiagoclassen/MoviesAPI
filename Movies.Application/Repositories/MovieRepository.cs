@@ -98,9 +98,19 @@ public class MovieRepository : IMovieRepository
         return movie;
     }
 
-    public async Task<IEnumerable<Movie>> GetAllAsync(Guid? userId = default, CancellationToken token = default)
+    public async Task<IEnumerable<Movie>> GetAllAsync(GetAllMoviesOptions options, CancellationToken token = default)
     {
         using var connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        var orderClause = string.Empty;
+
+        if(options is not null)
+        {
+            orderClause = $"""
+                , m.{options.SortField}
+                order by m.{options.SortField} {(options.SortOrder == SortOrder.Ascending ? "asc" : "desc")}
+                """;
+        }
+        
         var result = await connection.QueryAsync(new CommandDefinition(""""
             select 
                 m.*, 
@@ -111,8 +121,19 @@ public class MovieRepository : IMovieRepository
             left join genres g on m.id = g.movieid
             left join ratings r on m.id = r.movieid
             left join ratings mur on m.id = mur.movieid and mur.userid = @userId
-            group by id, userrating
-            """", new { userId }, cancellationToken: token));
+            where(@title is null or m.title like ('%' || title || '%'))
+            and (@yearofrelease is null or m.yearofrelease = @yearofrelease)
+            group by id, userrating {orderClause}
+            limit @pageSize
+            offset @pageOffset
+            """", new
+        {
+            userId = options!.UserId,
+            title = options?.Title,
+            yearofrelease = options?.YearOfRelease,
+            pageSize = options?.PageSize,
+            pageOffSet = (options!.Page = 1) * options.PageSize
+        }, cancellationToken: token));
 
         return result.Select(x => new Movie
         {
@@ -174,5 +195,21 @@ public class MovieRepository : IMovieRepository
         return await connection.ExecuteScalarAsync<bool>(new CommandDefinition(""""
             select count(1) from movies where id=@id
             """", new { id }, cancellationToken: token));
+    }
+
+    public async Task<int> GetCountAsync(string? title, int? yearOfRelease, CancellationToken token = default)
+    {
+        using var connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+
+        return await connection.QuerySingleAsync<int>(new CommandDefinition(""""
+            select count(id) from movies
+            where (@title is null or title like ('%' || @title || '%'))
+            and (@yearOfRelease is null or yearofrelease = @yearOfRelease)
+            """", new
+        {
+            title,
+            yearOfRelease            
+        }, cancellationToken: token));
+
     }
 }
