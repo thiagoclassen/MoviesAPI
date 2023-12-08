@@ -1,7 +1,6 @@
 ﻿using Movies.Application.Models;
 using Movies.Contract.Requests;
 using Movies.Contract.Responses;
-using System.Net.NetworkInformation;
 
 namespace Movies.API.Mapping;
 
@@ -31,9 +30,15 @@ public static class ContractMapping
         };
     }
 
-    public static MoviesResponse MapToResponse(this IEnumerable<Movie> movies)
+    public static MoviesResponse MapToResponse(this IEnumerable<Movie> movies, int page, int pageSize, int totalCount)
     {
-        return new MoviesResponse { Items = movies.Select(MapToResponse) };
+        return new MoviesResponse
+        {
+            Items = movies.Select(MapToResponse),
+            Page = page,
+            PageSize = pageSize,
+            Total = totalCount,
+        };
     }
 
     public static Movie MapToMovie(this UpdateMovieRequest request, Guid id)
@@ -65,7 +70,9 @@ public static class ContractMapping
             YearOfRelease = request.YearOfRelease,
             SortField = request.SortBy?.Trim('+', '-'),
             SortOrder = request.SortBy is null ? SortOrder.Unsorted :
-                        request.SortBy.StartsWith('-') ? SortOrder.Descending : SortOrder.Ascending
+                        request.SortBy.StartsWith('-') ? SortOrder.Descending : SortOrder.Ascending,
+            Page = request.Page,
+            PageSize = request.PageSize
         };
     }
 
