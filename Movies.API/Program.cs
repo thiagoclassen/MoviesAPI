@@ -52,8 +52,20 @@ builder.Services.AddApiVersioning(x =>
     x.ApiVersionReader = new MediaTypeApiVersionReader("api-version");
 }).AddMvc().AddApiExplorer();
 
+//builder.Services.AddResponseCaching();
+builder.Services.AddOutputCache(x =>
+{
+    x.AddBasePolicy(x => x.Cache());
+    x.AddPolicy("MovieCache", c =>
+        c.Cache()
+         .Expire(TimeSpan.FromMinutes(1))
+         .SetVaryByQuery(new[] { "title", "yearofrelease", "sortBy", "page", "pageSize" })
+         .Tag("movies")
+    );
+});
+
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-builder.Services.AddSwaggerGen( x => x.OperationFilter<SwaggerDefaultValues>());
+builder.Services.AddSwaggerGen(x => x.OperationFilter<SwaggerDefaultValues>());
 
 builder.Services.AddControllers();
 
@@ -83,6 +95,9 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+//app.UseResponseCaching();
+app.UseOutputCache();
 
 app.UseMiddleware<ValidationMappingMiddleware>();
 app.MapControllers();
