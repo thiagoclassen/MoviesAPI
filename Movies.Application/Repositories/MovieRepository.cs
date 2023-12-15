@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using Movies.Application.Database;
 using Movies.Application.Models;
-using System.ComponentModel.DataAnnotations;
 
 namespace Movies.Application.Repositories;
 public class MovieRepository : IMovieRepository
@@ -103,14 +102,14 @@ public class MovieRepository : IMovieRepository
         using var connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         var orderClause = string.Empty;
 
-        if(options.SortField is not null)
+        if (options.SortField is not null)
         {
             orderClause = $"""
             , m.{options.SortField}
             order by m.{options.SortField} {(options.SortOrder == SortOrder.Ascending ? "asc" : "desc")}
             """;
         }
-        
+
         var result = await connection.QueryAsync(new CommandDefinition($"""
             select m.*, 
                    string_agg(distinct g.name, ',') as genres , 
@@ -208,7 +207,7 @@ public class MovieRepository : IMovieRepository
             """", new
         {
             title,
-            yearOfRelease            
+            yearOfRelease
         }, cancellationToken: token));
 
     }

@@ -3,14 +3,14 @@ using Movies.Application.Database;
 using Movies.Application.Models;
 
 namespace Movies.Application.Repositories;
-public  class RatingRepository : IRatingRepository
+public class RatingRepository : IRatingRepository
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
 
     public RatingRepository(IDbConnectionFactory dbConnectionFactory)
     {
         _dbConnectionFactory = dbConnectionFactory;
-    }    
+    }
 
     public async Task<float?> GetRatingAsync(Guid movieId, CancellationToken token)
     {
