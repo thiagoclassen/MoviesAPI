@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Movies.API.Auth;
 using Movies.API.Mapping;
-using Movies.Application.Repositories;
 using Movies.Application.Services;
 using Movies.Contract.Requests;
 using Movies.Contract.Responses;
@@ -25,6 +24,7 @@ public class MoviesController : ControllerBase
         _outputCacheStore = outputCacheStore;
     }
 
+    //[ServiceFilter(typeof(ApiKeyAuthFilter))]
     [Authorize(AuthConstants.TrustedMemberPolicyName)]
     [HttpPost(ApiEndpoints.Movies.Create)]
     [ProducesResponseType(typeof(MovieResponse), StatusCodes.Status201Created)]
@@ -103,7 +103,7 @@ public class MoviesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken token)
-    {
+    {        
         var deleted = await _movieService.DeleteAsync(id, token);
         if (!deleted)
         {

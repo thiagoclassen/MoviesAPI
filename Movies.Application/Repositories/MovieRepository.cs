@@ -103,36 +103,36 @@ public class MovieRepository : IMovieRepository
         using var connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         var orderClause = string.Empty;
 
-        if(options is not null)
+        if(options.SortField is not null)
         {
             orderClause = $"""
-                , m.{options.SortField}
-                order by m.{options.SortField} {(options.SortOrder == SortOrder.Ascending ? "asc" : "desc")}
-                """;
+            , m.{options.SortField}
+            order by m.{options.SortField} {(options.SortOrder == SortOrder.Ascending ? "asc" : "desc")}
+            """;
         }
         
-        var result = await connection.QueryAsync(new CommandDefinition(""""
-            select 
-                m.*, 
-                string_agg(distinct g.name, ',') as genres, 
-                round(avg(r.rating), 1) as rating, 
-                mur.rating as userrating
+        var result = await connection.QueryAsync(new CommandDefinition($"""
+            select m.*, 
+                   string_agg(distinct g.name, ',') as genres , 
+                   round(avg(r.rating), 1) as rating, 
+                   myr.rating as userrating
             from movies m 
             left join genres g on m.id = g.movieid
             left join ratings r on m.id = r.movieid
-            left join ratings mur on m.id = mur.movieid and mur.userid = @userId
-            where(@title is null or m.title like ('%' || title || '%'))
-            and (@yearofrelease is null or m.yearofrelease = @yearofrelease)
+            left join ratings myr on m.id = myr.movieid
+                and myr.userid = @userId
+            where (@title is null or m.title like ('%' || @title || '%'))
+            and  (@yearofrelease is null or m.yearofrelease = @yearofrelease)
             group by id, userrating {orderClause}
             limit @pageSize
             offset @pageOffset
-            """", new
+            """, new
         {
-            userId = options!.UserId,
-            title = options?.Title,
-            yearofrelease = options?.YearOfRelease,
-            pageSize = options?.PageSize,
-            pageOffSet = (options!.Page = 1) * options.PageSize
+            userId = options.UserId,
+            title = options.Title,
+            yearofrelease = options.YearOfRelease,
+            pageSize = options.PageSize,
+            pageOffset = (options.Page - 1) * options.PageSize
         }, cancellationToken: token));
 
         return result.Select(x => new Movie
