@@ -23,7 +23,7 @@ public class DatabaseHealthCheck : IHealthCheck
             _ = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
             return HealthCheckResult.Healthy();
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             const string errorMessage = "Database is unhealthy";
             _logger.LogError(errorMessage, e);

@@ -103,7 +103,7 @@ public class MoviesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken token)
-    {        
+    {
         var deleted = await _movieService.DeleteAsync(id, token);
         if (!deleted)
         {

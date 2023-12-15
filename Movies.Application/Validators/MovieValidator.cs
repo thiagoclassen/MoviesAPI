@@ -22,7 +22,7 @@ public class MovieValidator : AbstractValidator<Movie>, IApplicationMarker
     {
         var existingMovie = await _movieRepository.GetBySlugAsync(slug);
 
-        if(existingMovie is not null)
+        if (existingMovie is not null)
         {
             return existingMovie.Id == movie.Id;
         }

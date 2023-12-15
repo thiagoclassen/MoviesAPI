@@ -29,7 +29,7 @@ public class ValidationMappingMiddleware
                     Message = x.ErrorMessage
                 })
             };
-            
+
             await context.Response.WriteAsJsonAsync(validationFailureResponse);
         }
     }

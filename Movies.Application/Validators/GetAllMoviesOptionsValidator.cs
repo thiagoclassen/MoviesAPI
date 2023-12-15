@@ -14,7 +14,7 @@ public class GetAllMoviesOptionsValidator : AbstractValidator<GetAllMoviesOption
         RuleFor(x => x.YearOfRelease).LessThanOrEqualTo(DateTime.UtcNow.Year);
 
         RuleFor(x => x.SortField)
-            .Must( x=> x is null || AcceptableSortParameters.Contains(x, StringComparer.OrdinalIgnoreCase) )
+            .Must(x => x is null || AcceptableSortParameters.Contains(x, StringComparer.OrdinalIgnoreCase))
             .WithMessage("You can only sort by title and yearofrelease");
 
         RuleFor(x => x.Page)

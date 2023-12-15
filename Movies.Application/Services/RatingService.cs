@@ -13,7 +13,7 @@ public class RatingService : IRatingService
     {
         _ratingRepository = ratingRepository;
         _movieRepository = movieRepository;
-    }    
+    }
 
     public async Task<bool> RateMovieAsync(Guid movieId, int rating, Guid userId, CancellationToken token)
     {
